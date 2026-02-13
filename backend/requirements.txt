@@ -1,2 +1,9 @@
 fastapi
 uvicorn
+python-multipart
+pypdf
+beautifulsoup4
+lxml
+openpyxl
+python-dateutil
+eval_type_backport

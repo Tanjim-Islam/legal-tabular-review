@@ -1,20 +1,24 @@
-Frontend Skeleton (Minimal Framework)
+Frontend
 
-Purpose
-This folder holds the frontend implementation for the Questionnaire Agent.
-It uses a minimal Vite + React setup and serves as the starting point for
-implementation.
+React UI for Legal Tabular Review.
 
-Planned Screens
-- Project List: view all projects and their status
-- Project Detail: sections, questions, and answers with review actions
-- Question Review: approve/reject/manual edit with citations and confidence
-- Document Management: upload, scope, and indexing status
-- Evaluation Report: compare AI vs human answers with similarity scores
-- Request Status: async task tracking and error details
+Implemented UI features:
+- Quick/full extraction run controls
+- Side-by-side comparison table (fields x documents)
+- Per-cell detail panel with citation + confidence reasons
+- Review actions: confirm, reject, manual edit
+- CSV/XLSX export buttons
 
-Planned UI Modules
-- src/pages/       Page-level containers
-- src/components/  Reusable UI components
-- src/services/    API clients and request helpers
-- src/state/       Client state management
+Run:
+```bash
+npm install
+npm run dev
+```
+
+Build:
+```bash
+npm run build
+```
+
+Optional API override:
+- `VITE_API_BASE` (default: `http://127.0.0.1:8000`)

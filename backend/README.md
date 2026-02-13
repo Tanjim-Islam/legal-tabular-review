@@ -1,26 +1,29 @@
-Backend Skeleton (Minimal Framework)
+Backend
 
-Purpose
-This folder holds the backend service implementation for the Questionnaire
-Agent. It uses a minimal FastAPI setup and serves as the starting point for
-implementation.
+FastAPI backend for Legal Tabular Review.
 
-Planned Modules
-- src/api/        HTTP route handlers for the listed endpoints
-- src/models/     Data models mirroring the spec data structures
-- src/services/   Core business logic (project, answers, ingestion, evaluation)
-- src/indexing/   Multi-layer indexing pipeline and chunking
-- src/storage/    Persistence layer (DB, vector store, object storage)
-- src/workers/    Async/background processing and request status tracking
-- src/utils/      Shared helpers, validation, and constants
+Implemented modules:
+- `src/api/` routes and request models
+- `src/parsers/` PDF/HTML parsing with page/section chunking
+- `src/extraction/` deterministic template loader, extractor, normalizers
+- `src/services/` inventory, run orchestration, review/audit, exports
+- `src/database.py` SQLite schema and access layer
+- `src/settings.py` repo/runtime paths
 
-Endpoints (to be implemented)
-- POST /create-project-async
-- POST /generate-single-answer
-- POST /generate-all-answers
-- POST /update-project-async
-- POST /update-answer
-- GET /get-project-info
-- GET /get-project-status
-- POST /index-document-async
-- GET /get-request-status
+Implemented endpoints:
+- `GET /health`
+- `GET /projects`
+- `GET /documents`
+- `POST /documents/upload`
+- `POST /runs`
+- `GET /jobs/{job_id}`
+- `GET /results/table`
+- `PATCH /cells/{cell_id}`
+- `GET /cells/{cell_id}/audit`
+- `POST /exports/csv`
+- `POST /exports/xlsx`
+
+Notes:
+- Uses local SQLite under `artifacts/`.
+- Uses local thread-based async for non-blocking runs.
+- No external AI APIs are used.
