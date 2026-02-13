@@ -10,10 +10,22 @@ What this implementation provides:
 - Supports manual edits and review actions with audit history.
 - Renders side-by-side table review UI in the frontend.
 - Exports reviewed results to CSV and XLSX.
+- Supports review states: `CONFIRMED`, `REJECTED`, `MANUAL_UPDATED`, `MISSING_DATA`.
 
 Important:
 - No external AI APIs are used.
-- Current field template is `backend/templates/example_v1_template.json` and is marked example-only until you confirm the final v1 field list/types.
+- Active template is `backend/templates/v1_template.json`.
+
+## Final v1 Fields
+- `parties_and_entities`
+- `effective_date_term`
+- `dispute_resolution`
+- `breach_liability`
+- `payment_delivery_terms`
+
+Notes:
+- `effective_date_term` is extracted as a combined value under one key.
+- Citation includes document + location, snippet, and char offsets.
 
 ## Project Structure
 - `backend/` FastAPI API, parsing/extraction pipeline, SQLite persistence, exports, tests.
@@ -44,7 +56,7 @@ cd ..
 
 ```bash
 source .venv/bin/activate
-uvicorn app:app --app-dir backend --reload
+uvicorn backend.app:app --reload
 ```
 
 Backend URL: `http://127.0.0.1:8000`

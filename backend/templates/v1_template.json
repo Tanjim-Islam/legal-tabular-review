@@ -1,0 +1,75 @@
+{
+  "template_id": "legal_tabular_review_v1",
+  "status": "final_v1_ready",
+  "description": "Final v1 extraction template aligned to documented spec keys.",
+  "fields": [
+    {
+      "key": "parties_and_entities",
+      "label": "Parties and Entities",
+      "type": "party",
+      "normalizer": "text",
+      "hints": ["parties", "between", "lessor", "lessee", "borrower", "seller", "buyer"],
+      "search": {
+        "join_groups": true,
+        "patterns": [
+          "(?is)(?:by and between|between)\\s+([^\\n\\.;]{3,220}?)\\s+and\\s+([^\\n\\.;]{3,220})",
+          "(?is)(?:lessor|seller|borrower)\\s*,\\s*as\\s*([^\\n,;]{2,80}).{0,100}?(?:lessee|buyer|lender)\\s*,\\s*as\\s*([^\\n,;]{2,80})",
+          "(?is)this\\s+agreement\\s+is\\s+made\\s+between\\s+([^\\n\\.;]{3,220}?)\\s+and\\s+([^\\n\\.;]{3,220})"
+        ]
+      }
+    },
+    {
+      "key": "effective_date_term",
+      "label": "Effective Date / Term",
+      "type": "text",
+      "normalizer": "text",
+      "hints": ["effective date", "effective as of", "term", "termination", "lease term"],
+      "search": {
+        "patterns": [
+          "(?is)effective(?:\\s+as\\s+of)?\\s+(?:date\\s*)?[:\\-]?\\s*([A-Za-z]+\\s+\\d{1,2},\\s+\\d{4}|[0-9]{1,2}/[0-9]{1,2}/[0-9]{2,4}|[0-9]{4}-[0-9]{2}-[0-9]{2})",
+          "(?is)(?:term and termination|lease term|term)\\s*[\\.:\\-]\\s*([^\\n]{20,320})",
+          "(?is)(?:initial term and renewal|amended lease term|during the term)\\s*[:\\-]?\\s*([^\\n]{20,320})"
+        ]
+      }
+    },
+    {
+      "key": "dispute_resolution",
+      "label": "Dispute Resolution",
+      "type": "clause_text",
+      "normalizer": "text",
+      "hints": ["dispute", "arbitration", "governing law", "jurisdiction"],
+      "search": {
+        "patterns": [
+          "(?is)(?:dispute resolution|arbitration|governing law|jurisdiction)\\s*[\\.:\\-]\\s*([^\\n]{20,420})",
+          "(?is)in the event of a dispute[^\\n]{20,420}"
+        ]
+      }
+    },
+    {
+      "key": "breach_liability",
+      "label": "Breach Liability",
+      "type": "clause_text",
+      "normalizer": "text",
+      "hints": ["breach", "liability", "default", "indemnification", "damages"],
+      "search": {
+        "patterns": [
+          "(?is)(?:breach liability|liability|limitation of liability|default|indemnification)\\s*[\\.:\\-]\\s*([^\\n]{20,420})",
+          "(?is)(?:shall be liable|in default|events of default|indemnify)[^\\n]{20,420}"
+        ]
+      }
+    },
+    {
+      "key": "payment_delivery_terms",
+      "label": "Payment / Delivery Terms",
+      "type": "clause_text",
+      "normalizer": "text",
+      "hints": ["payment", "invoice", "pay", "delivery", "shipment"],
+      "search": {
+        "patterns": [
+          "(?is)(?:payment|invoicing and payment|delivery terms|packing and shipment|delivery)\\s*[\\.:\\-]\\s*([^\\n]{20,420})",
+          "(?is)(?:will pay|shall pay|will deliver|shall deliver)[^\\n]{20,420}"
+        ]
+      }
+    }
+  ]
+}

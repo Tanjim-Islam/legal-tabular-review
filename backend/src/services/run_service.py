@@ -7,11 +7,19 @@ from typing import Any
 from ..database import store
 from ..domain import DocumentRecord
 from ..extraction.extractor import ExtractionResult, extract_field
-from ..extraction.template import load_template
+from ..extraction.template import ExtractionTemplate, load_template
 from ..parsers import parse_document
 from ..settings import DEFAULT_TEMPLATE_PATH
 from ..utils import from_json, to_json, utc_now_iso
 from .inventory import sync_and_list_documents
+
+REQUIRED_V1_KEYS = [
+    "parties_and_entities",
+    "effective_date_term",
+    "dispute_resolution",
+    "breach_liability",
+    "payment_delivery_terms",
+]
 
 
 def create_job(mode: str, options: dict[str, Any]) -> str:
@@ -192,12 +200,25 @@ def _row_to_cell(row: Any) -> dict[str, Any]:
     }
 
 
+def _resolve_template_for_payload(job_id: str | None) -> ExtractionTemplate:
+    template_path = str(DEFAULT_TEMPLATE_PATH)
+    if job_id:
+        job = get_job(job_id)
+        if job:
+            options = job.get("options", {}) or {}
+            template_path = options.get("template_path") or template_path
+
+    return load_template(template_path)
+
+
 def get_table_payload(job_id: str | None = None) -> dict[str, Any]:
     effective_job_id = job_id or get_latest_completed_job_id()
+    template = _resolve_template_for_payload(effective_job_id)
+    field_order_map = {field.key: index for index, field in enumerate(template.fields)}
+
     if not effective_job_id:
         return {
             "job": None,
-            "template": {"status": "example_only_pending_user_confirmation"},
             "documents": [],
             "fields": [],
             "rows": [],
@@ -209,7 +230,7 @@ def get_table_payload(job_id: str | None = None) -> dict[str, Any]:
         SELECT *
         FROM cells
         WHERE job_id = ?
-        ORDER BY field_key ASC, document_identifier ASC
+        ORDER BY document_identifier ASC
         """,
         (effective_job_id,),
     )
@@ -217,7 +238,6 @@ def get_table_payload(job_id: str | None = None) -> dict[str, Any]:
     if not rows:
         return {
             "job": job,
-            "template": {"status": "example_only_pending_user_confirmation"},
             "documents": [],
             "fields": [],
             "rows": [],
@@ -247,6 +267,8 @@ def get_table_payload(job_id: str | None = None) -> dict[str, Any]:
                     "type": row["field_type"],
                 }
             )
+
+    fields.sort(key=lambda item: field_order_map.get(item["key"], 9999))
 
     cell_map: dict[tuple[str, str], dict[str, Any]] = {}
     for row in rows:
@@ -286,10 +308,6 @@ def get_table_payload(job_id: str | None = None) -> dict[str, Any]:
 
     return {
         "job": job,
-        "template": {
-            "status": "example_only_pending_user_confirmation",
-            "note": "Example template is active until user confirms final v1 fields.",
-        },
         "documents": documents,
         "fields": fields,
         "rows": table_rows,

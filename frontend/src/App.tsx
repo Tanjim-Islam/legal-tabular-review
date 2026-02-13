@@ -42,10 +42,6 @@ type TablePayload = {
     created_at: string;
     finished_at: string | null;
   } | null;
-  template: {
-    status: string;
-    note?: string;
-  };
   documents: { id: string; identifier: string }[];
   fields: { key: string; label: string; type: string }[];
   rows: TableRow[];
@@ -55,7 +51,10 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers || {}),
+    },
     ...options,
   });
   if (!response.ok) {
@@ -87,10 +86,13 @@ export default function App() {
     try {
       setBusy(true);
       setMessage(`Running ${mode} extraction...`);
-      const result = await fetchJson<{ job: { id: string; status: string } }>("/runs", {
-        method: "POST",
-        body: JSON.stringify({ mode, wait: true }),
-      });
+      const result = await fetchJson<{ job: { id: string; status: string } }>(
+        "/runs",
+        {
+          method: "POST",
+          body: JSON.stringify({ mode, wait: true }),
+        },
+      );
       await loadTable(result.job.id);
       setMessage(`Run ${result.job.id.slice(0, 8)} completed (${mode}).`);
     } catch (error) {
@@ -139,8 +141,11 @@ export default function App() {
         throw new Error(`Export failed: ${response.status}`);
       }
       const blob = await response.blob();
-      const contentDisposition = response.headers.get("content-disposition") || "";
-      const filenameMatch = contentDisposition.match(/filename=\"?([^\";]+)\"?/i);
+      const contentDisposition =
+        response.headers.get("content-disposition") || "";
+      const filenameMatch = contentDisposition.match(
+        /filename=\"?([^\";]+)\"?/i,
+      );
       const filename = filenameMatch?.[1] || `review-export.${kind}`;
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -159,7 +164,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    loadTable().catch((error) => setMessage(`Failed to load table: ${(error as Error).message}`));
+    loadTable().catch((error) =>
+      setMessage(`Failed to load table: ${(error as Error).message}`),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -194,10 +201,9 @@ export default function App() {
       <header className="header">
         <div>
           <h1>Legal Tabular Review</h1>
-          <p>Deterministic extraction with citations, confidence, and review actions.</p>
-          <p className="small">
-            Template status: {table?.template.status || "unknown"}{" "}
-            {table?.template.note ? `- ${table.template.note}` : ""}
+          <p>
+            Deterministic extraction with citations, confidence, and review
+            actions.
           </p>
         </div>
         <div className="controls">
@@ -207,10 +213,16 @@ export default function App() {
           <button disabled={busy} onClick={() => runExtraction("full")}>
             Run Full
           </button>
-          <button disabled={busy || !table?.job?.id} onClick={() => exportFile("csv")}>
+          <button
+            disabled={busy || !table?.job?.id}
+            onClick={() => exportFile("csv")}
+          >
             Export CSV
           </button>
-          <button disabled={busy || !table?.job?.id} onClick={() => exportFile("xlsx")}>
+          <button
+            disabled={busy || !table?.job?.id}
+            onClick={() => exportFile("xlsx")}
+          >
             Export XLSX
           </button>
         </div>
@@ -220,7 +232,8 @@ export default function App() {
         <span>{message}</span>
         {table?.job ? (
           <span>
-            Job: {table.job.id.slice(0, 8)} ({table.job.mode}, {table.job.status})
+            Job: {table.job.id.slice(0, 8)} ({table.job.mode},{" "}
+            {table.job.status})
           </span>
         ) : null}
       </section>
@@ -245,15 +258,21 @@ export default function App() {
                   {row.cells.map((cell) => (
                     <td
                       key={`${row.field_key}-${cell.document_id}`}
-                      className={selectedCell?.cell_id === cell.cell_id ? "selected" : ""}
+                      className={
+                        selectedCell?.cell_id === cell.cell_id ? "selected" : ""
+                      }
                       onClick={() => {
                         setSelectedCell(cell);
                         setManualValue(cell.value || "");
                       }}
                     >
-                      <div className="cell-value">{cell.value || "(missing)"}</div>
+                      <div className="cell-value">
+                        {cell.value || "(missing)"}
+                      </div>
                       <div className="cell-meta">
-                        <span className={`tag ${cell.review_state.toLowerCase()}`}>
+                        <span
+                          className={`tag ${cell.review_state.toLowerCase()}`}
+                        >
                           {cell.review_state}
                         </span>
                         <span>{cell.confidence.toFixed(2)}</span>
@@ -270,21 +289,24 @@ export default function App() {
       <aside className="detail">
         <h2>Cell Detail</h2>
         {!selectedCell ? (
-          <p>Select a cell to inspect citation, confidence, and review actions.</p>
+          <p>
+            Select a cell to inspect citation, confidence, and review actions.
+          </p>
         ) : (
           <div className="detail-body">
             <p>
               <strong>Document:</strong> {selectedCell.document_identifier}
             </p>
             <p>
-              <strong>Current Value:</strong> {selectedCell.value || "(missing)"}
+              <strong>Current Value:</strong>{" "}
+              {selectedCell.value || "(missing)"}
             </p>
             <p>
               <strong>Review State:</strong> {selectedCell.review_state}
             </p>
             <p>
-              <strong>Confidence:</strong> {selectedCell.confidence.toFixed(2)} (
-              {selectedCell.confidence_reasons.join(", ")})
+              <strong>Confidence:</strong> {selectedCell.confidence.toFixed(2)}{" "}
+              ({selectedCell.confidence_reasons.join(", ")})
             </p>
             <p>
               <strong>Citation Location:</strong>{" "}
@@ -297,10 +319,16 @@ export default function App() {
             </p>
 
             <div className="detail-controls">
-              <button disabled={busy} onClick={() => updateCell({ review_state: "CONFIRMED" })}>
+              <button
+                disabled={busy}
+                onClick={() => updateCell({ review_state: "CONFIRMED" })}
+              >
                 Confirm
               </button>
-              <button disabled={busy} onClick={() => updateCell({ review_state: "REJECTED" })}>
+              <button
+                disabled={busy}
+                onClick={() => updateCell({ review_state: "REJECTED" })}
+              >
                 Reject
               </button>
             </div>
@@ -315,7 +343,12 @@ export default function App() {
             </label>
             <button
               disabled={busy || !manualValue.trim()}
-              onClick={() => updateCell({ manual_value: manualValue.trim(), reason: "manual edit" })}
+              onClick={() =>
+                updateCell({
+                  manual_value: manualValue.trim(),
+                  reason: "manual edit",
+                })
+              }
             >
               Save Manual Edit
             </button>

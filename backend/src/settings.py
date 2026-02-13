@@ -12,7 +12,7 @@ UPLOADS_DIR = ARTIFACTS_DIR / "uploads"
 EXPORTS_DIR = ARTIFACTS_DIR / "exports"
 REPORTS_DIR = ARTIFACTS_DIR / "reports"
 DB_PATH = ARTIFACTS_DIR / "legal_tabular_review.db"
-DEFAULT_TEMPLATE_PATH = BACKEND_DIR / "templates" / "example_v1_template.json"
+DEFAULT_TEMPLATE_PATH = BACKEND_DIR / "templates" / "v1_template.json"
 
 
 def ensure_runtime_dirs() -> None:
